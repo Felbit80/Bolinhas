@@ -11,35 +11,67 @@ let bolas = []
 let numBolas = 0
 
 class Bola{
-    constructor(cativeiro, arrayBolas){
+    constructor(arrayBolas, cativeiro){
         this.tamanho = Math.round(Math.random()*10)+10
         this.r = Math.floor(Math.random()*255)
         this.g = Math.floor(Math.random()*255)
         this.b = Math.floor(Math.random()*255)
-        this.pX = Math.floor(Math.random() - (larguraCativeiro-this.tamanho))
-        this.pY = Math.floor(Math.random() - (alturaCativeiro-this.tamanho))
-        this.velocidadeX = Math.round(Math.random()*5)+5
-        this.velocidadeY = Math.round(Math.random()*5)+5
+        this.pX = Math.floor(Math.random() * (larguraCativeiro-this.tamanho))
+        this.pY = Math.floor(Math.random() * (alturaCativeiro-this.tamanho))
+        this.velocidadeX = Math.round(Math.random()*1.5)+2
+        this.velocidadeY = Math.round(Math.random()*1.5)+2
         this.direcaoX = (Math.random()*10) < 5 ? 1 : -1
         this.direcaoY = (Math.random()*10) < 5 ? 1 : -1
         this.cativeiro=cativeiro
         this.arrayBolas=arrayBolas
         this.id=Date.now()+Math.floor(Math.random()*1000000000000)
         this.imprimir()
-        this.controle=setInterval(this.controlar(), 10)
+        this.controle=setInterval(this.controlar, 10)
         this.bolaDOM = document.getElementById(this.id)
+        numBolas++
+        numObjetos.innerHTML=numBolas
     }
     posBola = () => {
-        //Retorna a posição da bolinha
+        return bolas.indexOf(this)
     }
     remover = () => {
-        //Remove a bolinha do DOM
+        clearInterval(this.controle)
+        bolas=bolas.filter((el) => {
+            if(el.id != this.id){
+                return el
+            }
+        })
+        this.bolaDOM.remove()
+        numBolas--
+        numObjetos.innerHTML=numBolas
     }
     imprimir = () => {
-        //Insere a bolinha no DOM
+        const div = document.createElement("div")
+        div.setAttribute("id", this.id)
+        div.setAttribute("class", "bola")
+        div.setAttribute("style", `left: ${this.pX}px; top: ${this.pY}px; width: ${this.tamanho}px; height: ${this.tamanho}px; background-color: rgb(${this.r}, ${this.g}, ${this.b});`)
+        cativeiro.appendChild(div)
+    }
+    colisao = () => {
+        if(this.pX+this.tamanho*0.5 >= larguraCativeiro){
+            this.direcaoX = -1
+        } else if(this.pX-this.tamanho*0.5 <= 0){
+            this.direcaoX = 1
+        }
+        if(this.pY+this.tamanho*0.5 >= alturaCativeiro){
+            this.direcaoY = -1
+        } else if(this.pY-this.tamanho*0.5 <= 0){
+            this.direcaoY = 1
+        }
     }
     controlar = () => {
-        //Verifica posição e distâncida da bola da borda
+        this.colisao()
+        this.pX += this.direcaoX*this.velocidadeX
+        this.pY += this.direcaoY*this.velocidadeY
+        this.bolaDOM.setAttribute("style", `left: ${this.pX}px; top: ${this.pY}px; width: ${this.tamanho}px; height: ${this.tamanho}px; background-color: rgb(${this.r}, ${this.g}, ${this.b});`)
+        if(this.pX > larguraCativeiro || this.pY > alturaCativeiro){
+            this.remover()
+        }
     }
 }
 
@@ -50,11 +82,11 @@ window.addEventListener("resize", (el) => {
 btnAdicionar.addEventListener("click", (el) => {
     const quantasBolinhas = inputBolinhas.value
     for(let aux = 0; aux < quantasBolinhas; aux++){
-        //Instanciar novas bolinhas
+        bolas.push(new Bola(bolas, cativeiro))
     }
 })
 btnRemover.addEventListener("click", (el) => {
     bolas.map((el) => {
-        //Remover todas as bolinhas
+        el.remover()
     })
 })
